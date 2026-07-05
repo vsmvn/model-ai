@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+_*.png
+_*.mp4
+out.png
+out.mp4
