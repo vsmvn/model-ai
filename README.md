@@ -6,6 +6,23 @@
 
 ---
 
+## 📚 Bộ tài liệu (đọc file phù hợp với việc cần làm)
+| File | Nội dung |
+|---|---|
+| **README.md** (đang xem) | Tổng quan + chọn nhanh + chọn VPS + model chính |
+| [INSTALL.md](INSTALL.md) | **Hướng dẫn cài đặt** từ đầu (VPS → ComfyUI → API → model) |
+| [api-architecture.md](api-architecture.md) | **Kỹ thuật viết API** cho AI + **bật/tắt VPS qua API tiết kiệm** |
+| [API_DOCS.md](API_DOCS.md) | Tài liệu API đang chạy (endpoint, ví dụ) |
+| [catalog-image.md](catalog-image.md) | **Đầy đủ model ẢNH** + ControlNet/IPAdapter/upscale/tách nền/ghép mặt/inpaint |
+| [catalog-video.md](catalog-video.md) | **Đầy đủ model VIDEO** (tự host + API) + audio-cho-video + nối clip |
+| [catalog-audio-3d.md](catalog-audio-3d.md) | **TTS (text→giọng) + ASR (giọng→text)** + nhạc + **3D** |
+| [catalog-llm.md](catalog-llm.md) | **LLM**: chat + code + vision + embedding |
+| [training.md](training.md) | **Train LoRA / fine-tune** model theo dữ liệu riêng |
+
+Code kèm theo (copy lên VPS): `api_server.py`, `idle_watchdog.py`, `provision_vps.sh`, `vast_gpu_client.py`, `ai_api.php`.
+
+---
+
 ## 0. Mục lục
 - [1. Chọn nhanh theo nhu cầu](#1-chọn-nhanh-theo-nhu-cầu)
 - [2. Hướng dẫn chọn VPS / GPU](#2-hướng-dẫn-chọn-vps--gpu)
