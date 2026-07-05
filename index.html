@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="vi"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Máy tính chi phí AI — Tự host vs API</title>
+<style>
+:root{
+  --bg:#f7f8fb; --card:#fff; --line:#e4e7ee; --txt:#1a1d26; --sub:#5b6472;
+  --self:#2563eb; --api:#e0812b; --ok:#16a34a; --shadow:0 1px 3px rgba(0,0,0,.06);
+}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1117;--card:#171a22;--line:#2a2f3a;--txt:#e7e9ee;--sub:#9aa3b2;--shadow:none}}
+:root[data-theme=light]{--bg:#f7f8fb;--card:#fff;--line:#e4e7ee;--txt:#1a1d26;--sub:#5b6472;--shadow:0 1px 3px rgba(0,0,0,.06)}
+:root[data-theme=dark]{--bg:#0f1117;--card:#171a22;--line:#2a2f3a;--txt:#e7e9ee;--sub:#9aa3b2;--shadow:none}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--txt);line-height:1.5}
+.wrap{max-width:920px;margin:0 auto;padding:20px 16px 60px}
+h1{font-size:22px;margin:.2em 0} .lead{color:var(--sub);margin:0 0 18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:14px 0;box-shadow:var(--shadow)}
+.card h2{font-size:16px;margin:0 0 12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:600px){.grid{grid-template-columns:1fr}}
+label{display:block;font-size:13px;color:var(--sub);margin-bottom:4px}
+input,select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--txt);font-size:15px}
+.hint{font-size:12px;color:var(--sub);margin-top:4px}
+.res{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
+@media(max-width:600px){.res{grid-template-columns:1fr}}
+.tile{border-radius:12px;padding:16px;border:1px solid var(--line)}
+.tile.self{border-left:4px solid var(--self)} .tile.api{border-left:4px solid var(--api)}
+.tile .lbl{font-size:13px;color:var(--sub)} .tile .big{font-size:30px;font-weight:700;margin:2px 0}
+.tile .sub{font-size:12px;color:var(--sub)}
+.bar{height:12px;border-radius:6px;background:var(--line);overflow:hidden;margin:4px 0 2px}
+.bar>i{display:block;height:100%}
+.verdict{margin-top:14px;padding:14px 16px;border-radius:12px;background:linear-gradient(0deg,rgba(22,163,74,.10),rgba(22,163,74,.10));border:1px solid rgba(22,163,74,.35);font-size:15px}
+.verdict b{color:var(--ok)}
+details{margin-top:10px} summary{cursor:pointer;color:var(--sub);font-size:13px}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+td,th{border-bottom:1px solid var(--line);padding:6px 4px;text-align:left} th{color:var(--sub);font-weight:600}
+.foot{color:var(--sub);font-size:12px;margin-top:20px}
+a{color:var(--self)}
+.toggle{float:right;font-size:13px;cursor:pointer;color:var(--sub);border:1px solid var(--line);border-radius:8px;padding:4px 10px;background:var(--card)}
+</style></head><body>
+<div class="wrap">
+<button class="toggle" onclick="toggleTheme()">🌓 Sáng/Tối</button>
+<h1>💰 Máy tính chi phí AI — Tự host (VPS) vs API ngoài</h1>
+<p class="lead">Chọn model + nhập số lượng dùng mỗi tháng → so sánh chi phí <b>tự dựng trên VPS GPU</b> và <b>gọi API trả phí</b>. Tất cả giá có thể chỉnh (mục Nâng cao). Đơn vị: USD/tháng.</p>
+
+<div class="card">
+  <h2>1. Bạn tạo bao nhiêu mỗi tháng?</h2>
+  <div class="grid">
+    <div>
+      <label>🖼️ Số ẢNH / tháng</label>
+      <input id="nImg" type="number" min="0" value="1000" oninput="calc()">
+      <label style="margin-top:8px">Model ảnh (ảnh hưởng tốc độ tự host)</label>
+      <select id="mImg" onchange="calc()">
+        <option value="sdxl">SDXL / SD3.5 (~7s/ảnh)</option>
+        <option value="flux" selected>FLUX dev/Kontext (~15s/ảnh)</option>
+      </select>
+    </div>
+    <div>
+      <label>🎬 Số GIÂY VIDEO / tháng <span class="hint">(vd 100 clip × 5s = 500)</span></label>
+      <input id="nVid" type="number" min="0" value="300" oninput="calc()">
+      <label style="margin-top:8px">Model video</label>
+      <select id="mVid" onchange="calc()">
+        <option value="ltx">LTX-Video (nhanh, ~4s render/1s)</option>
+        <option value="wan" selected>Wan 2.2 (~12s render/1s)</option>
+        <option value="hunyuan">HunyuanVideo (đẹp, ~40s render/1s)</option>
+      </select>
+    </div>
+  </div>
+  <div class="grid" style="margin-top:12px">
+    <div><label>💬 Chat (triệu token / tháng)</label><input id="nChat" type="number" min="0" value="0" oninput="calc()"></div>
+    <div><label>🔊 TTS (nghìn ký tự / tháng)</label><input id="nTts" type="number" min="0" value="0" oninput="calc()"></div>
+  </div>
+  <div id="recBox" style="margin-top:12px;padding:12px 14px;border-radius:10px;background:var(--bg);border:1px dashed var(--line);font-size:13px"></div>
+</div>
+
+<div class="card">
+  <h2>2. Cấu hình tự host</h2>
+  <div class="grid">
+    <div>
+      <label>Nguồn máy</label>
+      <select id="source" onchange="showSource();calc()">
+        <option value="vast" selected>Thuê VPS (Vast.ai)</option>
+        <option value="own">Máy chủ TỰ CÓ (chỉ tiền điện)</option>
+      </select>
+    </div>
+    <div>
+      <label>Số LUỒNG đồng thời <span class="hint">(phục vụ mấy người/job cùng lúc)</span></label>
+      <input id="conc" type="number" min="1" value="1" oninput="calc()">
+    </div>
+  </div>
+  <div class="grid" style="margin-top:12px">
+    <div>
+      <label>Cách chạy</label>
+      <select id="mode" onchange="calc()">
+        <option value="auto" selected>Chỉ khi dùng (auto-stop, tiết kiệm)</option>
+        <option value="247">Chạy 24/7 (dịch vụ live)</option>
+      </select>
+      <div class="hint" id="concNote"></div>
+    </div>
+    <div></div>
+  </div>
+  <!-- Thuê Vast -->
+  <div class="grid" id="vastBox" style="margin-top:12px">
+    <div>
+      <label>GPU (giá thuê Vast.ai)</label>
+      <select id="gpu" onchange="fillGpu();calc()">
+        <option value="0.40">RTX 5090 32GB — $0.40/h</option>
+        <option value="0.40b">RTX 4090 24GB — $0.40/h</option>
+        <option value="0.70">RTX A6000 48GB — $0.70/h</option>
+        <option value="1.20">A100 80GB — $1.20/h</option>
+      </select>
+      <div class="hint">Giá $/giờ (chỉnh được): <input id="gpuRate" type="number" step="0.01" value="0.40" style="width:90px;display:inline-block" oninput="calc()"></div>
+    </div>
+    <div>
+      <label>Đĩa thuê (GB) — luôn tính phí</label>
+      <input id="disk" type="number" min="0" value="120" oninput="calc()">
+    </div>
+  </div>
+  <!-- Máy tự có -->
+  <div class="grid" id="ownBox" style="margin-top:12px;display:none">
+    <div>
+      <label>Công suất GPU (W)</label>
+      <input id="watt" type="number" min="0" value="450" oninput="calc()">
+      <div class="hint">5090~450W · 4090~350W · A6000~300W · 3090~350W</div>
+    </div>
+    <div>
+      <label>Giá điện ($/kWh)</label>
+      <input id="elec" type="number" step="0.01" value="0.10" oninput="calc()">
+      <div class="hint">VN ~2.500đ ≈ $0.10/kWh. Máy tự có: không mất phí thuê + đĩa.</div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>3. Kết quả</h2>
+  <div class="res">
+    <div class="tile self"><div class="lbl">🖥️ Tự host (VPS)</div><div class="big" id="selfCost">$0</div><div class="sub" id="selfBreak"></div>
+      <div class="bar"><i id="selfBar" style="background:var(--self);width:0"></i></div></div>
+    <div class="tile api"><div class="lbl">☁️ API ngoài</div><div class="big" id="apiCost">$0</div><div class="sub" id="apiBreak"></div>
+      <div class="bar"><i id="apiBar" style="background:var(--api);width:0"></i></div></div>
+  </div>
+  <div class="verdict" id="verdict"></div>
+  <details><summary>⚙️ Nâng cao — chỉnh giá API & thời gian render</summary>
+    <table>
+      <tr><th>Tham số</th><th>Giá trị</th><th>Ghi chú</th></tr>
+      <tr><td>API ảnh ($/ảnh)</td><td><input id="pImg" type="number" step="0.005" value="0.04" oninput="calc()"></td><td>FLUX Pro/DALL·E ~$0.04</td></tr>
+      <tr><td>API video ($/giây)</td><td><input id="pVid" type="number" step="0.01" value="0.12" oninput="calc()"></td><td>Kling/Runway ~0.05, Veo ~0.3–0.5</td></tr>
+      <tr><td>API chat ($/1M token)</td><td><input id="pChat" type="number" step="0.1" value="2" oninput="calc()"></td><td>tùy model</td></tr>
+      <tr><td>API TTS ($/1K ký tự)</td><td><input id="pTts" type="number" step="0.01" value="0.12" oninput="calc()"></td><td>ElevenLabs-ish</td></tr>
+      <tr><td>Phí đĩa ($/GB/tháng)</td><td><input id="pDisk" type="number" step="0.01" value="0.055" oninput="calc()"></td><td>Vast ~$0.055</td></tr>
+      <tr><td>Hệ số overhead auto-stop</td><td><input id="ovh" type="number" step="0.05" value="1.25" oninput="calc()"></td><td>cold-start/idle ~1.25×</td></tr>
+    </table>
+  </details>
+</div>
+
+<p class="foot">Ước tính tham khảo — giá GPU/API thay đổi thường xuyên, hãy kiểm tra trang chính thức. Tài liệu đầy đủ: <a href="README.md">README</a> · <a href="vps-cost.md">vps-cost</a> · <a href="api-providers.md">api-providers</a>.</p>
+</div>
+
+<script>
+function toggleTheme(){const r=document.documentElement;const d=r.getAttribute('data-theme')==='dark';r.setAttribute('data-theme',d?'light':'dark')}
+function fillGpu(){const v=document.getElementById('gpu').value;document.getElementById('gpuRate').value=parseFloat(v)}
+function showSource(){const own=$('source').value==='own';$('ownBox').style.display=own?'grid':'none';$('vastBox').style.display=own?'none':'grid'}
+const $=id=>document.getElementById(id); const n=id=>parseFloat($(id).value)||0;
+const IMG_SEC={sdxl:7,flux:15};
+const VID_RATIO={ltx:4,wan:12,hunyuan:40};   // giây render / giây output
+// cấu hình VPS/máy đề xuất theo model
+const REC_IMG={sdxl:"VRAM 12–16GB (RTX 4060Ti/4070/3060)", flux:"VRAM 16–24GB (RTX 4090/5090)"};
+const REC_VID={ltx:"VRAM 12–16GB (RTX 4070/4090)", wan:"VRAM 16–24GB (RTX 4090/5090)", hunyuan:"VRAM 24GB+ (RTX 5090/A6000)"};
+const NAME_IMG={sdxl:"SDXL", flux:"FLUX"}, NAME_VID={ltx:"LTX-Video", wan:"Wan 2.2", hunyuan:"HunyuanVideo"};
+function fmt(x){return '$'+x.toLocaleString('en-US',{maximumFractionDigits:0})}
+function updateRec(){
+  const mi=$('mImg').value, mv=$('mVid').value, conc=Math.max(1,n('conc'));
+  const need = (mv==='hunyuan')?"24GB+" : (mi==='flux'||mv==='wan')?"16–24GB" : "12–16GB";
+  const gpu = (need==="24GB+")?"RTX 5090 32GB / A6000 48GB" : (need==="16–24GB")?"RTX 4090 24GB / RTX 5090 32GB" : "RTX 4070/4060Ti 12–16GB";
+  let concLine;
+  if(conc<=1) concLine=`• <b>Máy: ${gpu}</b>, đĩa ≥ 80GB, RAM ≥ 32GB (1 GPU chạy tuần tự).`;
+  else concLine=`• <b>${conc} luồng → cần ${conc} GPU</b> (${conc} instance ${gpu}, hoặc 1 server nhiều GPU). Dịch vụ live → <b>chạy 24/7</b> (không auto-stop được).`;
+  $('recBox').innerHTML =
+    `💡 <b>Cấu hình đề xuất</b> (Ảnh: ${NAME_IMG[mi]}, Video: ${NAME_VID[mv]}, ${conc} luồng):<br>`+
+    `• Ảnh ${NAME_IMG[mi]}: ${REC_IMG[mi]} &nbsp;·&nbsp; Video ${NAME_VID[mv]}: ${REC_VID[mv]}<br>`+ concLine;
+  $('concNote').textContent = conc>=2 ? "≥2 luồng = dịch vụ live → tự động tính theo 24/7." : "";
+}
+function calc(){
+  updateRec();
+  const nImg=n('nImg'), nVid=n('nVid'), nChat=n('nChat'), nTts=n('nTts'), ovh=n('ovh');
+  const own=$('source').value==='own', conc=Math.max(1,n('conc'));
+  const live = conc>=2;                        // ≥2 luồng = phải chạy 24/7
+  const h247 = live || $('mode').value==='247';
+  const renderSec = nImg*IMG_SEC[$('mImg').value] + nVid*VID_RATIO[$('mVid').value];
+  const renderHrs = renderSec/3600;
+  let compute, diskCost, breakTxt;
+  if(own){
+    const kw=n('watt')/1000, elec=n('elec');
+    compute = (h247 ? conc*730 : renderHrs) * kw*elec; diskCost = 0;
+    breakTxt = h247 ? `${conc} GPU × 730h × ${kw.toFixed(2)}kW × $${elec} = ${fmt(compute)} (máy tự có, không phí thuê/đĩa)`
+                    : `${renderHrs.toFixed(1)}h × ${kw.toFixed(2)}kW × $${elec} = ${fmt(compute)} (máy tự có)`;
+  } else {
+    const rate=n('gpuRate'), disk=n('disk'), pDisk=n('pDisk');
+    compute = h247 ? conc*730*rate : renderHrs*rate*ovh;
+    diskCost = (h247?conc:1)*disk*pDisk;
+    breakTxt = h247 ? `${conc} GPU × 730h × $${rate} = ${fmt(compute)} + ${fmt(diskCost)} đĩa`
+                    : `${renderHrs.toFixed(1)}h render × $${rate}${ovh!==1?` × ${ovh}`:''} = ${fmt(compute)} + ${fmt(diskCost)} đĩa`;
+  }
+  const self = compute + diskCost;
+  const api = nImg*n('pImg') + nVid*n('pVid') + nChat*n('pChat') + nTts*n('pTts');
+  $('selfCost').textContent=fmt(self); $('apiCost').textContent=fmt(api);
+  $('selfBreak').textContent=breakTxt;
+  $('apiBreak').textContent = `ảnh ${fmt(nImg*n('pImg'))} · video ${fmt(nVid*n('pVid'))}` + (nChat?` · chat ${fmt(nChat*n('pChat'))}`:'') + (nTts?` · tts ${fmt(nTts*n('pTts'))}`:'');
+  const mx=Math.max(self,api,1);
+  $('selfBar').style.width=(self/mx*100)+'%'; $('apiBar').style.width=(api/mx*100)+'%';
+  const v=$('verdict');
+  if(self<=api){const s=api-self;v.innerHTML=`✅ Nên <b>TỰ HOST${own?' (máy tự có)':''}</b> — rẻ hơn ~${fmt(s)}/tháng${api>0?` (${(api/Math.max(self,0.01)).toFixed(1)}×)`:''}. Mức dùng này, tự host đáng.`;}
+  else{const s=self-api;v.innerHTML=`✅ Nên <b>DÙNG API</b> — rẻ hơn ~${fmt(s)}/tháng. Mức dùng còn thấp, chưa đáng dựng/chạy máy riêng.`;}
+}
+fillGpu(); showSource(); calc();
+</script>
+</body></html>
