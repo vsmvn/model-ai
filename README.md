@@ -6,8 +6,9 @@
 
 ---
 
-## 🧮 Công cụ tính chi phí (Tự host vs API) — [index.html](index.html)
-Chọn model + nhập số lượng ảnh/video/tháng → so sánh chi phí **tự dựng VPS** vs **API ngoài** + gợi ý nên build hay dùng API. Bật **GitHub Pages** (Settings → Pages → branch `main`) để khách truy cập online tại `https://vsmvn.github.io/model-ai/`.
+## 🧮 Công cụ tính chi phí (Tự host vs API)
+Chọn model + số lượng ảnh/video/tháng → so sánh chi phí **tự dựng VPS** vs **API ngoài** + gợi ý nên build hay dùng API.
+👉 **Mở công cụ: [index.html](index.html)** · Online: https://vsmvn.github.io/model-ai/
 
 ## 📚 Bộ tài liệu (đọc file phù hợp với việc cần làm)
 | File | Nội dung |
@@ -19,6 +20,7 @@ Chọn model + nhập số lượng ảnh/video/tháng → so sánh chi phí **t
 | [auto-translate.md](auto-translate.md) | **Tự dịch prompt VN→EN** cho model không hiểu tiếng Việt (trước khi tạo ảnh/video) |
 | [API_DOCS.md](API_DOCS.md) | Tài liệu API đang chạy (endpoint, ví dụ) |
 | [vps-cost.md](vps-cost.md) | **Cấu hình VPS + chi phí** (cài tất cả? chạy 24/7 vs auto-stop) |
+| [ecosystems.md](ecosystems.md) | **Trọn hệ sinh thái theo hãng**: FLUX (BFL), Stable Diffusion (Stability), Wan (Alibaba), Hunyuan (Tencent), LTX (Lightricks) |
 | [catalog-image.md](catalog-image.md) | **Đầy đủ model ẢNH** + ControlNet/IPAdapter/upscale/tách nền/ghép mặt/inpaint |
 | [catalog-video.md](catalog-video.md) | **Đầy đủ model VIDEO** (tự host + API) + audio-cho-video + nối clip |
 | [catalog-audio-3d.md](catalog-audio-3d.md) | **TTS (text→giọng) + ASR (giọng→text)** + nhạc + **3D** |
